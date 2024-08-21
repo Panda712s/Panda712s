@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDUcruiser App</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA0eXGnWhA6mCb6wkmfzZ0QGNUEwYKOouI&callback=initMap" async defer></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Main Menu -->
+        <div id="main-menu">
+            <div class="card">
+                <h2>Welcome to EDUcruiser</h2>
+                <p>Select your role:</p>
+                <button id="student-button" class="primary-btn">Student</button>
+                <button id="driver-button" class="primary-btn">Driver</button>
+            </div>
+        </div>
+
+        <!-- Driver Login -->
+        <div id="driver-login" style="display:none;">
+            <div class="card">
+                <h2>Driver Login</h2>
+                <p>Please enter your bus number:</p>
+                <input type="text" id="bus-number" placeholder="Enter Bus Number" class="input-field">
+                <button id="login-driver" class="primary-btn">Login</button>
+                <p id="login-error" style="color:red; display:none;">Invalid Bus Number!</p>
+            </div>
+        </div>
+
+        <!-- Main Page for Students -->
+        <div id="main-page-student" style="display:none;">
+            <div class="map-container">
+                <div id="map" class="card">Loading map...</div>
+                <div id="arrival-time" class="card">
+                    Estimated Bus Arrival Time: <span id="bus-time">5 mins</span>
+                </div>
+                <div id="endpoint-info" class="card">
+                    Bus Destination: <span id="bus-endpoint">Not Available</span>
+                </div>
+            </div>
+            <button id="settings-button" class="primary-btn">Settings</button>
+            <button id="return-to-menu" class="secondary-btn">Return to Menu</button>
+        </div>
+
+        <!-- Main Page for Drivers -->
+        <div id="main-page-driver" style="display:none;">
+            <div class="map-container">
+                <div id="map" class="card">Loading map...</div>
+            </div>
+            <div id="driver-options" class="card">
+                <label for="endpoint-select">Choose Your Endpoint:</label>
+                <select id="endpoint-select">
+                    <option value="TUT Main Campus (Pretoria West)">TUT Main Campus (Pretoria West)</option>
+                    <option value="TUT Arcadia Campus">TUT Arcadia Campus</option>
+                </select>
+                <p>You can start sharing your location now!</p>
+                <button id="share-location" class="primary-btn">Share My Location</button>
+                <button id="switch-endpoint" style="display:none;" class="primary-btn">Switch to Soshanguve South Campus</button>
+            </div>
+            <button id="settings-button-driver" class="primary-btn">Settings</button>
+            <button id="return-to-menu-driver" class="secondary-btn">Return to Menu</button>
+        </div>
+
+        <!-- Settings Page -->
+        <div id="settings-page" style="display:none;">
+            <h2>Settings</h2>
+            <div class="card">
+                <label for="theme-color">Choose App Color:</label>
+                <input type="color" id="theme-color" value="#007BFF">
+            </div>
+            <div class="card">
+                <label for="night-mode">Night Mode:</label>
+                <input type="checkbox" id="night-mode">
+            </div>
+            <div class="card">
+                <button id="rate-app" class="primary-btn">Rate App</button>
+            </div>
+            <div class="card">
+                <button id="back-to-main-page" class="primary-btn">Back to Main Page</button>
+            </div>
+            <div class="card">
+                <p>Created by: P Akilimali</p>
+            </div>
+            <button id="back-to-main" class="secondary-btn">Back</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

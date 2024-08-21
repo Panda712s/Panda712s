@@ -1,0 +1,186 @@
+// Polyfill for classList in IE9/10
+(function () {
+    if (!("classList" in document.documentElement) && Object.defineProperty && typeof HTMLElement !== "undefined") {
+        Object.defineProperty(HTMLElement.prototype, "classList", {
+            get: function () {
+                var self = this;
+                function update(fn) {
+                    return function (value) {
+                        var classes = self.className.split(/\s+/);
+                        var index = classes.indexOf(value);
+                        fn(classes, index, value);
+                        self.className = classes.join(" ");
+                    };
+                }
+                return {
+                    add: update(function (classes, index, value) {
+                        if (index === -1) classes.push(value);
+                    }),
+                    remove: update(function (classes, index) {
+                        if (index !== -1) classes.splice(index, 1);
+                    }),
+                    toggle: update(function (classes, index, value) {
+                        if (index === -1) classes.push(value);
+                        else classes.splice(index, 1);
+                    }),
+                    contains: function (value) {
+                        return classes.indexOf(value) !== -1;
+                    }
+                };
+            }
+        });
+    }
+})();
+
+var map;
+var driverMarker;
+var currentDriverLocation = { lat: -25.558414, lng: 28.097239 }; // TUT Soshanguve South Campus
+
+var departureLocation = { lat: -25.558414, lng: 28.097239 }; // TUT Soshanguve South Campus
+var endpointLocations = {
+    "TUT Main Campus (Pretoria West)": { lat: -25.732925, lng: 28.197508 },
+    "TUT Arcadia Campus": { lat: -25.746512, lng: 28.190681 },
+    "TUT Soshanguve South Campus": { lat: -25.558414, lng: 28.097239 }
+};
+
+var selectedEndpoint = null;
+var validBusNumbers = ["02003", "02002", "02004", "02005", "02006", "02007", "02008", "02009", "00202"];
+
+document.addEventListener('DOMContentLoaded', function () {
+    var studentButton = document.getElementById('student-button');
+    var driverButton = document.getElementById('driver-button');
+    var mainMenu = document.getElementById('main-menu');
+    var mainPageStudent = document.getElementById('main-page-student');
+    var mainPageDriver = document.getElementById('main-page-driver');
+    var driverLogin = document.getElementById('driver-login');
+    var busNumberInput = document.getElementById('bus-number');
+    var loginDriverButton = document.getElementById('login-driver');
+    var loginError = document.getElementById('login-error');
+    var settingsButton = document.getElementById('settings-button');
+    var settingsButtonDriver = document.getElementById('settings-button-driver');
+    var settingsPage = document.getElementById('settings-page');
+    var rateAppButton = document.getElementById('rate-app');
+    var themeColorInput = document.getElementById('theme-color');
+    var nightModeToggle = document.getElementById('night-mode');
+    var backToMainButton = document.getElementById('back-to-main-page');
+    var returnToMenuButton = document.getElementById('return-to-menu');
+    var returnToMenuButtonDriver = document.getElementById('return-to-menu-driver');
+    var shareLocationButton = document.getElementById('share-location');
+    var switchEndpointButton = document.getElementById('switch-endpoint');
+    var endpointSelect = document.getElementById('endpoint-select');
+    var busEndpoint = document.getElementById('bus-endpoint');
+    var busTime = document.getElementById('bus-time');
+
+    // Load saved theme color
+    var savedColor = localStorage.getItem('themeColor');
+    if (savedColor) {
+        document.documentElement.style.setProperty('--primary-color', savedColor);
+        themeColorInput.value = savedColor;
+    }
+
+    // Load night mode setting
+    var nightModeEnabled = localStorage.getItem('nightMode') === 'true';
+    if (nightModeEnabled) {
+        document.body.classList.add('night-mode');
+        nightModeToggle.checked = true;
+    }
+
+    studentButton.addEventListener('click', function () {
+        mainMenu.style.display = 'none';
+        mainPageStudent.style.display = 'block';
+    });
+
+    driverButton.addEventListener('click', function () {
+        mainMenu.style.display = 'none';
+        driverLogin.style.display = 'block';
+    });
+
+    loginDriverButton.addEventListener('click', function () {
+        var enteredBusNumber = busNumberInput.value;
+        if (validBusNumbers.indexOf(enteredBusNumber) > -1) {
+            loginError.style.display = 'none';
+            driverLogin.style.display = 'none';
+            mainPageDriver.style.display = 'block';
+        } else {
+            loginError.style.display = 'block';
+        }
+    });
+
+    settingsButton.addEventListener('click', function () {
+        mainPageStudent.style.display = 'none';
+        settingsPage.style.display = 'block';
+    });
+
+    settingsButtonDriver.addEventListener('click', function () {
+        mainPageDriver.style.display = 'none';
+        settingsPage.style.display = 'block';
+    });
+
+    rateAppButton.addEventListener('click', function () {
+        alert('Thank you for rating the app!');
+    });
+
+    themeColorInput.addEventListener('input', function () {
+        var selectedColor = themeColorInput.value;
+        document.documentElement.style.setProperty('--primary-color', selectedColor);
+        localStorage.setItem('themeColor', selectedColor);
+    });
+
+    nightModeToggle.addEventListener('change', function () {
+        if (nightModeToggle.checked) {
+            document.body.classList.add('night-mode');
+            localStorage.setItem('nightMode', 'true');
+        } else {
+            document.body.classList.remove('night-mode');
+            localStorage.setItem('nightMode', 'false');
+        }
+    });
+
+    backToMainButton.addEventListener('click', function () {
+        settingsPage.style.display = 'none';
+        mainPageStudent.style.display = 'block';
+    });
+
+    returnToMenuButton.addEventListener('click', function () {
+        mainPageStudent.style.display = 'none';
+        mainMenu.style.display = 'block';
+    });
+
+    returnToMenuButtonDriver.addEventListener('click', function () {
+        mainPageDriver.style.display = 'none';
+        mainMenu.style.display = 'block';
+    });
+
+    shareLocationButton.addEventListener('click', function () {
+        selectedEndpoint = endpointSelect.value;
+        busEndpoint.textContent = selectedEndpoint;
+        switchEndpointButton.style.display = 'block';
+        alert('Sharing location to ' + selectedEndpoint);
+    });
+
+    switchEndpointButton.addEventListener('click', function () {
+        selectedEndpoint = "TUT Soshanguve South Campus";
+        busEndpoint.textContent = selectedEndpoint;
+        switchEndpointButton.style.display = 'none';
+        alert('Switched to Soshanguve South Campus');
+    });
+});
+
+function initMap() {
+    map = new google.maps.Map(document.getElementById('map'), {
+        center: departureLocation,
+        zoom: 14
+    });
+
+    driverMarker = new google.maps.Marker({
+        position: currentDriverLocation,
+        map: map,
+        title: "Bus Location"
+    });
+
+    var studentMarker = new google.maps.Marker({
+        position: departureLocation,
+        map: map,
+        title: "TUT Soshanguve South Campus"
+    });
+}
